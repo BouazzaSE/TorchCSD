@@ -1,0 +1,3 @@
+add_subdirectory(kernels)
+add_library(simulators INTERFACE)
+target_link_libraries(simulators INTERFACE simulators_kernels)

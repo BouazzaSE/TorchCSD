@@ -1,0 +1,5 @@
+add_subdirectory(autograd)
+add_subdirectory(inference)
+add_subdirectory(kernels)
+add_library(layers STATIC layers.cpp)
+target_link_libraries(layers PUBLIC layers_autograd layers_inference layers_kernels)

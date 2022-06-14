@@ -1,0 +1,5 @@
+add_subdirectory(autograd)
+add_subdirectory(inference)
+add_subdirectory(kernels)
+add_library(activations STATIC activations.cpp)
+target_link_libraries(activations PUBLIC activations_autograd activations_inference activations_kernels)
