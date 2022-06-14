@@ -164,7 +164,7 @@ __global__ void _locvol_generate_payoffs(T1 *curand_states, const TensorRestrict
                     // d/dlv
                     dS[2+_k*num_nodes_y+_l] += -_lv*dt+sqrt_dt*Z;
                 }
-                if(i==num_steps-1) S_prev = S;
+                if(i==num_steps-1) S_prev = exp(S);
                 S += (r-0.5*_lv*_lv)*dt+_lv*sqrt_dt*Z;
                 t += dt;
             }
