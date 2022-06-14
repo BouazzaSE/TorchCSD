@@ -22,7 +22,7 @@ If you use this code in your work, we strongly encourage you to both cite this G
 ## Prerequisites
 The code was tested with the following software/library versions:
 * `cmake = 3.22.5`
-* `clang = 6.0.0`;
+* `clang >= 6.0.0`;
 * `libtorch = 1.11.0+cu102`
 
 A CUDA-capable GPU is needed along with a CUDA toolkit version >= 10.2.
