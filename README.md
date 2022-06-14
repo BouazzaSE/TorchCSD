@@ -28,3 +28,22 @@ The code was tested with the following software/library versions:
 Familiarity with CMake, the C++ API of Pytorch (`libtorch`), its automatic differentiation mechanism and the `torch::autograd::Function` class is assumed. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/. A simple tutorial on the Python counterpart `torch.autograd.Function` is available at https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html. We invite the advanced user to check the unit tests of the C++ API for a detailed _tour_ of the `torch::autograd::Function` class.
 
 The code was tested in Linux environments and is for now untested under Windows. We provide an example Python Notebook `build_demo.ipynb` serving as a launcher for the build process and which can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
+
+## Structure
+
+The directory structure is as follows:
+```
+TorchCSD
+│   build_demo.ipynb                (notebook with build instructions for Google Colab)
+└───lib
+│   │   modules                     (code for the analytic activations and custom layers)
+│   │   nets                        (implementations of neural network architectures for pricing)
+│   │   simulators                  (Monte Carlo simulators for the data generation)
+│   │   training                    (training routines)
+└───include                         (same structure as lib, contains include files)
+└───demos
+│   │──   benchmark_csd.cpp         (benchmarking code)
+│   │──   grad_check.cpp            (code for checking gradients)
+│   │──   layers_test.cpp           (code for testing out the different activations and layers)
+│   └──   train_vanilla_locvol.cpp  (a demo code implementing the local volatility experiment in the paper)
+```
