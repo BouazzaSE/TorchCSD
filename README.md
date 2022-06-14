@@ -25,6 +25,8 @@ The code was tested with the following software/library versions:
 * `clang = 6.0.0`;
 * `libtorch = 1.11.0+cu102`
 
+A CUDA-capable GPU is needed along with a CUDA toolkit version >= 10.2.
+
 Familiarity with CMake, the C++ API of Pytorch (`libtorch`), its automatic differentiation mechanism and the `torch::autograd::Function` class is assumed. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/. A simple tutorial on the Python counterpart `torch.autograd.Function` is available at https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html. We invite the advanced user to check the unit tests of the C++ API for a detailed _tour_ of the `torch::autograd::Function` class.
 
 The code was tested in Linux environments and is for now untested under Windows. We provide an example Python Notebook `build_demo.ipynb` serving as a launcher for the build process and which can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
