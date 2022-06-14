@@ -1,6 +1,6 @@
 # TorchCSD
 
-TorchCSD is a library written for the paper **"Fast Calibration using Complex-Step Sobolev Training"** by Saadeddine Bouazza. It is a C++ implementation of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
+TorchCSD is a library written for the paper **"Fast Calibration using Complex-Step Sobolev Training"** by Saadeddine Bouazza. It is a C++ implementation, based on `libtorch`, of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
 
 The complex arithmetic uses a custom representation allowing for contiguous real and imaginary parts of complex tensors, as opposed to the PyTorch implementation of complex tensors for which these are not perfectly contiguous.
 
@@ -25,6 +25,6 @@ The code was tested with the following software/library versions:
 * `clang = 6.0.0`;
 * `libtorch = 1.11.0+cu102`
 
-Familiarity with the C++ API of Pytorch (`libtorch`), its automatic differentiation mechanism and the `torch::autograd::Function` class is assumed. We invite the user to check out the documentation at https://pytorch.org/cppdocs/.
+Familiarity with CMake, the C++ API of Pytorch (`libtorch`), its automatic differentiation mechanism and the `torch::autograd::Function` class is assumed. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/. A simple tutorial on the Python counterpart `torch.autograd.Function` is available at https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html. We invite the advanced user to check the unit tests of the C++ API for a detailed _tour_ of the `torch::autograd::Function` class.
 
 The code was tested in Linux environments and is for now untested under Windows. We provide an example Python Notebook `build_demo.ipynb` serving as a launcher for the build process and which can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
