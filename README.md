@@ -4,7 +4,7 @@ TorchCSD is a library written for the paper **"Fast Calibration using Complex-St
 
 The complex arithmetic uses a custom representation allowing for contiguous real and imaginary parts of complex tensors, as opposed to the PyTorch implementation of complex tensors for which these are not perfectly contiguous.
 
-The analytic extensions of the activations and different custom layers are implemented with the complex numbers treated as numbers in $\mathbb{R}^2$, hence allowing the reuse of `libtorch`'s autograd mechanism by limiting ourselves to the implementation of the chaining code in the `::backward` methods of the different `torch::autograd::Function` subclasses.
+The analytic extensions of the activations and different custom layers are implemented with the complex numbers treated as vectors in $\mathbb{R}^2$, hence allowing the reuse of `libtorch`'s autograd mechanism by limiting ourselves to the implementation of the chaining code in the `::backward` methods of the different `torch::autograd::Function` subclasses.
 
 The chaining would normally require, for example in activation functions, four partial derivatives. However, we explicitly exploit the Cauchy-Riemann equations thanks to our assumption of holomorphism and we use only the derivatives with respect to the real part of the input of the real and imaginary part of the output.
 
