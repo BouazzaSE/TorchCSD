@@ -17,7 +17,7 @@ The code was tested in various Linux environments and on RTX 2070 Super, V100, A
 
 We provide an example Python Notebook `build_demo.ipynb` serving as a launcher for the build process and which can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
 
-# Quick Walkthrough
+## Quick Walkthrough
 The complex arithmetic uses a custom representation allowing for contiguous real and imaginary parts of complex tensors, as opposed to the PyTorch implementation of complex tensors for which these are not perfectly contiguous.
 
 The chaining in the backpropagation process would normally require, for example in complex activation functions, four real partial derivatives. However, we explicitly exploit the Cauchy-Riemann equations thanks to our assumption of holomorphism and we use only the derivatives with respect to the real part of the input of the real and imaginary part of the output.
