@@ -80,7 +80,8 @@ The following are upcoming features I am or will be working on:
 * Adding more advanced model calibration applications;
 * Adding support for arbitrary shapes in the complex tensors;
 * Adding AVX acceleration for CPU-only training and inference;
-* Implementing TorchScript extensions to allow the use of the modules from PyTorch and exploit the ops-fusion mechanism.
+* Implementing TorchScript extensions to allow the use of the modules from PyTorch and exploit the ops-fusion mechanism;
+* Adding more analytic extensions of activations.
 
 ## Citing
 If you use this code in your work, you are strongly encouraged to both cite this Github repository (with the corresponding identifier for the commit you are looking at) and the paper describing this training approach for calibration:
