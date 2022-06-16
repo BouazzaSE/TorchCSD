@@ -19,5 +19,6 @@ add_subdirectory(demos)
 
 target_link_libraries(benchmark_csd modules nets ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
 target_link_libraries(train_vanilla_locvol modules nets training simulators ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
+target_link_libraries(price_vanilla_locvol modules nets training simulators ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
 target_link_libraries(grad_check modules ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})
 target_link_libraries(layers_test modules nets simulators ${CUDA_LIBRARIES} ${TORCH_LIBRARIES})

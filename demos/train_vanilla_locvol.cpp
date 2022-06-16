@@ -1,3 +1,24 @@
+/*
+Copyright 2022 Bouazza SAADEDDINE
+
+This file is part of TorchCSD.
+
+TorchCSD is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+TorchCSD is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with TorchCSD.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
 #include <ATen/Context.h>
 #include <ATen/Functions.h>
 #include <c10/core/TensorOptions.h>
@@ -17,7 +38,7 @@
 
 int main(int argc, char *argv[]){
     if (argc != 21) 
-        throw std::invalid_argument("19 arguments please: device_idx, train_eval, fit_locvol, num_paths, num_inner_samples, num_layers, num_units_multiplier, num_epochs, num_epochs_warmup, batch_size, batch_size_valid, lr, lr_warmup, gamma_01, gamma_02, gamma_11, gamma_12, gamma_2, halve_every and dumpname.");
+        throw std::invalid_argument("20 arguments please: device_idx, train_eval, fit_locvol, num_paths, num_inner_samples, num_layers, num_units_multiplier, num_epochs, num_epochs_warmup, batch_size, batch_size_valid, lr, lr_warmup, gamma_01, gamma_02, gamma_11, gamma_12, gamma_2, halve_every and dumpname.");
     int device_idx;
     bool train_eval, fit_locvol;
     long num_paths, num_inner_samples, num_layers, num_units_multiplier, num_epochs, num_epochs_warmup, batch_size, batch_size_valid, halve_every;
@@ -45,6 +66,7 @@ int main(int argc, char *argv[]){
     csd::utils::args::parse_arg(20, argv[20], &dumpname); // 20th arg name of the dump file for the neural network
     std::cout << dumpname << std::endl;
     auto device = torch::Device(torch::kCUDA, device_idx);
+    // setting the bounds for the model parameters
     UniformBounds<float> r_b = {0., 0.05};
     UniformBounds<float> stk_b = {0.25, 2.1};
     UniformBounds<float> mat_b = {0.05, 2.5};
@@ -52,6 +74,7 @@ int main(int argc, char *argv[]){
     // we stop shortly before the MC horizon in the local vol grid to ensure last nodes are sufficiently explored
     UniformBounds<float> nodes_x_b = {1.0/12, 2.};
     UniformBounds<float> nodes_y_b = {static_cast<float>(log(0.25)), static_cast<float>(log(2.1))}; //{static_cast<float>(log(0.25)), static_cast<float>(log(2.1))};
+    // we are considering a local volatility grid of size 5x5
     long num_nodes_x = 5;
     long num_nodes_y = 5;
     const long num_inputs = 3+num_nodes_x*num_nodes_y;
@@ -70,6 +93,7 @@ int main(int argc, char *argv[]){
         curandStateMRG32k3a_t *curand_states;
         auto nodes_x = torch::linspace(nodes_x_b.min, nodes_x_b.max, num_nodes_x, torch::dtype(torch::kFloat32).device(device));
         auto nodes_y = torch::linspace(nodes_y_b.min, nodes_y_b.max, num_nodes_y, torch::dtype(torch::kFloat32).device(device));
+        // the mat_threshold array constructed here will be used to help ensure zero partial derivatives with respect to nodes corresponding to time steps beyond the maturity given in the input
         mat_threshold.zero_();
         mat_threshold.slice(1, 3+num_nodes_y) = nodes_x.slice(0, c10::nullopt, -1).repeat_interleave(num_nodes_y);
         C10_CUDA_CHECK(cudaMalloc((void **)&curand_states, num_paths*sizeof(curandState))); // TODO: we probably don't need that many states
@@ -80,6 +104,7 @@ int main(int argc, char *argv[]){
         auto mat = x.select(-1, 2);
         auto lv = x.slice(1, 3).view({-1, num_nodes_x, num_nodes_y});
         C10_CUDA_CHECK(cudaEventRecord(evt_start, stream.stream()));
+        // we generate random samples of model and product parameters
         csd::simulators::kernels::locvol::generate_params(curand_states, r_b, stk_b, mat_b, lv_b, r, stk, mat, lv, num_steps_per_year, stream);
         C10_CUDA_CHECK(cudaEventRecord(evt_stop, stream.stream()));
         C10_CUDA_CHECK(cudaEventSynchronize(evt_stop));
@@ -93,21 +118,26 @@ int main(int argc, char *argv[]){
         auto call_dpayoffs = torch::empty({num_paths, 3+num_nodes_x*num_nodes_y}, torch::dtype(torch::kFloat32).device(device));
         auto put_dpayoffs = torch::empty({num_paths, 3+num_nodes_x*num_nodes_y}, torch::dtype(torch::kFloat32).device(device));
         C10_CUDA_CHECK(cudaEventRecord(evt_start, stream.stream()));
+        // in front of each realization of model and product parameters, we will generate one payoff conditional on those params
+        // (or more precisely an average of num_inner_samples where the latter is usually 32 if we want to reduce variance at a small computational cost)
         csd::simulators::kernels::locvol::generate_payoffs<curandStateMRG32k3a_t, float, 5, 5>(curand_states, r, stk, mat, lv, nodes_x, nodes_y, call_payoffs.select(-1, 0), put_payoffs.select(-1, 0), call_dpayoffs, put_dpayoffs, S0, num_steps_per_year, num_inner_samples, stream);
         C10_CUDA_CHECK(cudaEventRecord(evt_stop, stream.stream()));
         C10_CUDA_CHECK(cudaEventSynchronize(evt_stop));
         C10_CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, evt_start, evt_stop));
         std::cout << "Generated " << num_paths << " labels in " << elapsed_time/1000 << " seconds" << std::endl;
+        // we compute the no-arbitrage lower bound for the call price that needs to be satisfied
+        // the lower bound will be enforced via a penalization during training
         auto lb = (S0-(-r*mat).exp_().mul_(stk)).relu_().unsqueeze(1);
         auto train_slice = torch::indexing::Slice(0, num_paths>>1);
         auto valid_slice = torch::indexing::Slice(num_paths>>1, num_paths);
         C10_CUDA_CHECK(cudaEventRecord(evt_start, stream.stream()));
+        // we launch the training of our neural network
         csd::training::train_call_put(net, x.index({train_slice}), x.index({valid_slice}), call_payoffs.index({train_slice}), call_payoffs.index({valid_slice}), put_payoffs.index({train_slice}), put_payoffs.index({valid_slice}), call_dpayoffs.index({train_slice}), call_dpayoffs.index({valid_slice}), put_dpayoffs.index({train_slice}), put_dpayoffs.index({valid_slice}), lb.index({train_slice}), lb.index({valid_slice}), batch_size, batch_size_valid, lr, lr_warmup, num_epochs, num_epochs_warmup, gamma_01, gamma_02, gamma_11, gamma_12, gamma_2, log(2.)/halve_every, 5, 5, 5);
         C10_CUDA_CHECK(cudaEventRecord(evt_stop, stream.stream()));
         C10_CUDA_CHECK(cudaEventSynchronize(evt_stop));
         C10_CUDA_CHECK(cudaEventElapsedTime(&elapsed_time, evt_start, evt_stop));
-        // torch::save(net->named_buffers(), "net_buffers.pt");
-        // torch::save(net->named_parameters(), "net_parameters.pt");
+        // dumping the trained neural network
+        // it can then be trivially loaded for inference using torch::load
         torch::save(net, dumpname);
         std::cout << "Neural network trained in " << elapsed_time/1000 << " seconds" << std::endl;
         C10_CUDA_CHECK(cudaEventRecord(evt_start, stream.stream()));
@@ -124,6 +154,7 @@ int main(int argc, char *argv[]){
         std::cout << "Generated out-of-sample " << num_paths << " labels in " << elapsed_time/1000 << " seconds" << std::endl;
         csd::training::compute_stats(net, x, call_payoffs, call_dpayoffs, batch_size_valid);
     } else {
+        // Launching a twin-simulation procedure to evaluate the distance against ground-truth prices
         torch::load(net, dumpname);
         long num_steps_per_year = 1000;
         curandStateMRG32k3a_t *curand_states;
@@ -172,6 +203,15 @@ int main(int argc, char *argv[]){
     }
     
     if(fit_locvol){
+        // Here a stochastic gradient descent is used for calibration and is ONLY FOR ILLUSTRATION PURPOSES.
+        // More serious calibration routines implementations should use more advanced algorithms like Levenberg-Marquardt.
+        // Calibration is entirely orthogonal to the presented approach and is NOT the focus of the paper or this library.
+        // The main idea is that, whatever optimization-based calibration routine is used,
+        // the calibration will be fast if the pricing is fast,
+        // and having the latter is exactly the goal of the neural network training above
+        // (focused on call options, and via put-call parity, on put options too, hence tailored for calibration
+        // procedures where those are the calibration instruments).
+
         std::ifstream f("options_data.bin", std::ios::out | std::ios::binary);
         if(!f) {
             std::cout << "Could not open options data." << std::endl;
