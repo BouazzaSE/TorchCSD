@@ -11,7 +11,7 @@ The code was tested with the following software/library versions:
 
 A CUDA-capable GPU is needed along with a CUDA toolkit version >= 10.2.
 
-This project is for the advanced libtorch developer. It is assumed that the developer is familiar with the C++ API of Pytorch (libtorch), its automatic differentiation mechanism and the `torch::autograd::Function` class. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/ and the various unit tests in https://github.com/pytorch/pytorch/blob/master/test/cpp/api/autograd.cpp for a comprehensive _tour_ of the `torch::autograd::Function` class.
+This project is for the advanced libtorch developer. It is assumed that the developer is familiar with neural networks, the C++ API of Pytorch (libtorch), its automatic differentiation mechanism and the `torch::autograd::Function` class. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/ and the various unit tests in https://github.com/pytorch/pytorch/blob/master/test/cpp/api/autograd.cpp for a comprehensive _tour_ of the `torch::autograd::Function` class.
 
 The code was tested in various Linux environments and on RTX 2070 Super, V100, A100 and different Google Colaboratory GPUs but is for now untested under Windows. However in theory if one can compile code against libtorch in Visual C++ using for example the extension found at https://marketplace.visualstudio.com/items?itemName=YiZhang.LibTorch001, then there should be no issues to build this code on Windows.
 
@@ -23,7 +23,10 @@ The complex arithmetic uses a custom representation allowing for contiguous real
 The chaining in the backpropagation process would normally require, for example in complex activation functions, four real partial derivatives. However, we explicitly exploit the Cauchy-Riemann equations thanks to our assumption of holomorphism and we use only the derivatives with respect to the real part of the input of the real and imaginary part of the output.
 
 Indeed, assume one has the following computation graph in the scalar case for simplicity:
-![Example of a computation graph for computing z(f(a(x), b(x)), g(a(x), b(x)))](/images/computation_graph_example.png)
+<p align="center">
+  <img src="https://github.com/BouazzaSE/TorchCSD/blob/main/images/computation_graph_example.png?raw=true", alt="Example of a computation graph for computing z(f(a(x), b(x)), g(a(x), b(x)))">
+</p>
+
 for computing  $z(f(a(x), b(x)), g(a(x), b(x))) $ where  $x\in\mathbb{R} $  and the functions  $a:\mathbb{R}\rightarrow\mathbb{R} $,  $b:\mathbb{R}\rightarrow\mathbb{R} $,  $f:\mathbb{R}^2\rightarrow\mathbb{R} $,  $g:\mathbb{R}^2\rightarrow\mathbb{R} $  and $z:\mathbb{R}^2\rightarrow\mathbb{R} $  are assumed to be differentiable in their arguments.
 
 The common question in backpropagation that needs to be answered for the latter to work and properly differentiate  $z $  is, in the context of this example, the following: being given the adjoints  $\bar{f}=\frac{\partial z}{\partial f} $  and  $\bar{g}=\frac{\partial z}{\partial g} $, how can the adjoints  $\bar{a}=\frac{\partial z}{\partial a} $  and  $\bar{b}=\frac{\partial z}{\partial b} $  be computed? Via the chain rule, we have:
@@ -50,17 +53,6 @@ Lastly, an example code training a neural network to price calls (and puts using
 
 As I am not allowed to redistribute the options data, one has to constuct one's own options data file (using for example an options chain from Yahoo Finance) if one wants to test the calibration routine (which is not the highlight of the approach presented as it is orthogonal, but a simplistic example code was given for completeness). In the example code, the simplistic calibration routine assumes the presence of a binary file where the two first 32-bits unsigned integers (byte-order = little-endian) contain respectively the number of rows and columns (necessarily 3) of the option chain matrix, and the rest of the file is the binary blob representing the num_rows by num_columns prices matrix where the type of each entry is assumed to be a 64-bits float and each row contains the following three columns in this order: the moneyness, the maturity in years and the price. Calibration instruments are assumed, only for simplicity of the example, to be calls. Hence, one needs to convert all put prices to call prices using put-call parity if one wants to explicitly use this example. 
 
-## Citing
-If you use this code in your work, we strongly encourage you to both cite this Github repository (with the corresponding identifier for the commit you are looking at) and the paper describing this training approach for calibration:
-```latex
-@unpublished{csd2022saadeddine,
-  title={Fast Calibration using Complex-Step Sobolev Training},
-  author={Saadeddine, Bouazza},
-  year={\ndd},
-  note={unpublished}
-}
-```
-
 ## Structure
 
 The directory structure is as follows:
@@ -74,8 +66,19 @@ TorchCSD
 │   │──training                    (training routines)
 └───include                         (same structure as lib, contains include files)
 └───demos
-│   │──benchmark_csd.cpp         (benchmarking code)
-│   │──grad_check.cpp            (code for checking gradients)
-│   │──layers_test.cpp           (code for testing out the different activations and layers)
-│   └──train_vanilla_locvol.cpp  (a demo code implementing the local volatility experiment in the paper)
+    │──benchmark_csd.cpp         (benchmarking code)
+    │──grad_check.cpp            (code for checking gradients)
+    │──layers_test.cpp           (code for testing out the different activations and layers)
+    └──train_vanilla_locvol.cpp  (a demo code implementing the local volatility experiment in the paper)
+```
+
+## Citing
+If you use this code in your work, we strongly encourage you to both cite this Github repository (with the corresponding identifier for the commit you are looking at) and the paper describing this training approach for calibration:
+```latex
+@unpublished{csd2022saadeddine,
+  title={Fast Calibration using Complex-Step Sobolev Training},
+  author={Saadeddine, Bouazza},
+  year={\ndd},
+  note={unpublished}
+}
 ```
