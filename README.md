@@ -72,6 +72,16 @@ TorchCSD
     └──train_vanilla_locvol.cpp  (a demo code implementing the local volatility experiment in the paper)
 ```
 
+## TODO
+
+The following are upcoming features I am or will be working on:
+* Extending to higher-order sensitivities;
+* Extending to the fast pricing of structured products;
+* Adding more advanced model calibration applications;
+* Adding support for arbitrary shapes in the complex tensors;
+* Adding AVX acceleration for CPU-only training and inference;
+* Implementing TorchScript extensions to allow the use of the modules from PyTorch and exploit the ops-fusion mechanism.
+
 ## Citing
 If you use this code in your work, we strongly encourage you to both cite this Github repository (with the corresponding identifier for the commit you are looking at) and the paper describing this training approach for calibration:
 ```latex
