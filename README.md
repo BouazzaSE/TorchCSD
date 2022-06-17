@@ -15,7 +15,7 @@ This project is for the advanced libtorch developer. It is assumed that the deve
 
 The code was tested in various Linux environments and on RTX 2070 Super, V100, A100 and different Google Colaboratory GPUs but is for now untested under Windows. However in theory if one can compile code against libtorch in Visual C++ using for example the extension found at https://marketplace.visualstudio.com/items?itemName=YiZhang.LibTorch001, then there should be no issues to build this code on Windows.
 
-An example Python Notebook `build_demo.ipynb` serving as a launcher for the build process is provided and it can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
+An example Python Notebook `Demo_for_Google_Colab.ipynb` serving as a launcher for the build process is provided and it can be used in a Google Colaboratory instance. When testing in Google Colaboratory, please make sure the GPU is enabled by navigating to *"Edit"* -> *"Notebook Settings"* and choosing *"GPU"* in *"Hardware Accelerator"*.
 
 ## Quick Walkthrough
 The complex arithmetic uses a custom representation allowing for contiguous real and imaginary parts of complex tensors, as opposed to the PyTorch implementation of complex tensors for which these are not perfectly contiguous.
