@@ -164,7 +164,6 @@ template <typename T_hidden_real, typename T_hidden_complex, typename T_preoutpu
 std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor> VanillaLocVolImpl<T_hidden_real, T_hidden_complex, T_preoutput_real, T_preoutput_complex>::forward_call_put_complex(torch::Tensor x, torch::Tensor y){
   auto uv = forward_complex(x, y);
   auto put_uv = cput_from_call_layer->forward_complex(uv.first[1].select(-1, 0), uv.second[1].select(-1, 0), x, y[1], S0); // using call-put parity
-  // FIXME: debug cput_from_call_layer, it returns u and v of shape (1024, 2), while we expect something like (2, 1024)
   return {uv.first[0], put_uv.first.unsqueeze(-1), uv.second[0], put_uv.second.unsqueeze(-1)};
 }
 
