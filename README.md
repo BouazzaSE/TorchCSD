@@ -11,7 +11,7 @@ The code was tested with the following software/library versions:
 
 A CUDA-capable GPU is needed along with a CUDA toolkit version >= 10.2.
 
-This project is for the advanced libtorch developer. It is assumed that the developer is familiar with neural networks, the C++ API of Pytorch (libtorch), its automatic differentiation mechanism and the `torch::autograd::Function` class. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/frontend.html and the various unit tests in https://github.com/pytorch/pytorch/blob/master/test/cpp/api/autograd.cpp for a comprehensive _tour_ of the `torch::autograd::Function` class.
+This project is for the advanced libtorch developer. It is assumed that the developer is familiar with neural networks (obviously), the C++ API of Pytorch (libtorch), its automatic differentiation mechanism and the `torch::autograd::Function` class. We invite the user to check out the documentation of `libtorch` at https://pytorch.org/cppdocs/frontend.html and the various unit tests in https://github.com/pytorch/pytorch/blob/master/test/cpp/api/autograd.cpp for a comprehensive _tour_ of the `torch::autograd::Function` class.
 
 The code was tested in various Linux environments and on RTX 2070 Super, V100, A100 and different Google Colaboratory GPUs but is for now untested under Windows. However in theory if one can compile code against libtorch in Visual C++ using for example the extension found at https://marketplace.visualstudio.com/items?itemName=YiZhang.LibTorch001, then there should be no issues to build this code on Windows.
 
