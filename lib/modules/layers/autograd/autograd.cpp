@@ -32,7 +32,6 @@ namespace autograd {
 torch::autograd::variable_list
 ComplexCallLayer::forward(torch::autograd::AutogradContext *ctx, torch::Tensor x,
                          torch::Tensor y, torch::Tensor a, torch::Tensor b, double S) {
-  // TODO: ADD ASSERT CHECK FOR DIMENSIONS
   auto u = torch::empty({x.sizes()[0], x.sizes()[1]}, torch::dtype(x.dtype()).device(x.device()));
   auto v = torch::empty({x.sizes()[0], x.sizes()[1]}, torch::dtype(x.dtype()).device(x.device()));
   auto dudx1 = torch::empty({x.sizes()[0], x.sizes()[1]}, torch::dtype(x.dtype()).device(x.device()));
@@ -48,8 +47,6 @@ ComplexCallLayer::forward(torch::autograd::AutogradContext *ctx, torch::Tensor x
   }
   ctx->saved_data["S"] = S;
   ctx->save_for_backward({dudx1, dvdx1});
-  // auto stats = c10::cuda::CUDACachingAllocator::getDeviceStats(u.device().index());
-  // auto allocated_bytes = stats.allocated_bytes[(unsigned int)c10::cuda::CUDACachingAllocator::StatType::AGGREGATE];
   return {u, v};
 }
 
@@ -74,8 +71,6 @@ ComplexCallLayer::backward(torch::autograd::AutogradContext *ctx,
     throw std::invalid_argument(
         "ComplexCallLayer::backward only supports Float or Double tensors.");
   }
-  // auto stats = c10::cuda::CUDACachingAllocator::getDeviceStats(dx.device().index());
-  // auto allocated_bytes = stats.allocated_bytes[(unsigned int)c10::cuda::CUDACachingAllocator::StatType::AGGREGATE];
   return {dx, dy, torch::Tensor(), torch::Tensor(), torch::Tensor()};
 }
 
@@ -92,8 +87,6 @@ ComplexPutFromCallLayer::forward(torch::autograd::AutogradContext *ctx, torch::T
     throw std::invalid_argument(
         "ComplexCallFromPutLayer::forward only supports Float or Double tensors.");
   }
-  // auto stats = c10::cuda::CUDACachingAllocator::getDeviceStats(u.device().index());
-  // auto allocated_bytes = stats.allocated_bytes[(unsigned int)c10::cuda::CUDACachingAllocator::StatType::AGGREGATE];
   return {u, v};
 }
 
@@ -101,9 +94,6 @@ torch::autograd::variable_list
 ComplexPutFromCallLayer::backward(torch::autograd::AutogradContext *ctx, torch::autograd::variable_list grad_output) {
   auto du = grad_output[0];
   auto dv = grad_output[1];
-  // auto stats = c10::cuda::CUDACachingAllocator::getDeviceStats(du.device().index());
-  // auto allocated_bytes = stats.allocated_bytes[(unsigned int)c10::cuda::CUDACachingAllocator::StatType::AGGREGATE];
-  // return {du, du.neg(), torch::Tensor(), torch::Tensor(), torch::Tensor()};
   return {du, dv, torch::Tensor(), torch::Tensor(), torch::Tensor()};
 }
 } // namespace autograd
