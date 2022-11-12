@@ -1,6 +1,6 @@
 # TorchCSD
 
-TorchCSD is a library written for my paper **"Fast Calibration using Complex-Step Sobolev Training"** (see _Citing_ below). It is a libtorch-based C++ implementation of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
+TorchCSD is a library written for my paper **"Fast Calibration using Complex-Step Sobolev Training"** (see _Citing_ below, preprint is [available here](https://github.com/BouazzaSE/TorchCSD/raw/main/preprint.pdf)). It is a libtorch-based C++ implementation of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
 
 ## Prerequisites
 The code was tested with the following software/library versions:
@@ -27,20 +27,22 @@ Indeed, assume one has the following computation graph in the scalar case for si
   <img src="https://github.com/BouazzaSE/TorchCSD/blob/main/images/computation_graph_example.png?raw=true", alt="Example of a computation graph for computing z(f(a(x), b(x)), g(a(x), b(x)))">
 </p>
 
-for computing  $z(f(a(x), b(x)), g(a(x), b(x))) $ where  $x\in\mathbb{R} $  and the functions  $a:\mathbb{R}\rightarrow\mathbb{R} $,  $b:\mathbb{R}\rightarrow\mathbb{R} $,  $f:\mathbb{R}^2\rightarrow\mathbb{R} $,  $g:\mathbb{R}^2\rightarrow\mathbb{R} $  and $z:\mathbb{R}^2\rightarrow\mathbb{R} $  are assumed to be differentiable in their arguments.
+for computing  $z(f(a(x), b(x)), g(a(x), b(x)))$ where  $x\in\mathbb{R}$  and the functions  $a:\mathbb{R}\rightarrow\mathbb{R}$,  $b:\mathbb{R}\rightarrow\mathbb{R}$,  $f:\mathbb{R}^2\rightarrow\mathbb{R}$,  $g:\mathbb{R}^2\rightarrow\mathbb{R}$  and $z:\mathbb{R}^2\rightarrow\mathbb{R}$  are assumed to be differentiable in their arguments.
 
-The common question in backpropagation that needs to be answered for the latter to work and properly differentiate  $z $  is, in the context of this example, the following: being given the adjoints  $\bar{f}=\frac{\partial z}{\partial f} $  and  $\bar{g}=\frac{\partial z}{\partial g} $, how can the adjoints  $\bar{a}=\frac{\partial z}{\partial a} $  and  $\bar{b}=\frac{\partial z}{\partial b} $  be computed? Via the chain rule, we have:
+The common question in backpropagation that needs to be answered for the latter to work and properly differentiate  $z$  is, in the context of this example, the following: being given the adjoints  $\bar{f}=\frac{\partial z}{\partial f}$  and  $\bar{g}=\frac{\partial z}{\partial g}$, how can the adjoints  $\bar{a}=\frac{\partial z}{\partial a}$  and  $\bar{b}=\frac{\partial z}{\partial b}$  be computed? Via the chain rule, we have:
 
 $$\begin{aligned}\bar{a} &= \bar{f} \frac{\partial f}{\partial a} + \bar{g} \frac{\partial g}{\partial a}\\\\ \bar{b} &= \bar{f} \frac{\partial f}{\partial b} + \bar{g} \frac{\partial g}{\partial b}\end{aligned}$$
 
-Hence, in general, one would need the following four partial derivatives:  $\frac{\partial f}{\partial a} $,  $\frac{\partial f}{\partial b} $,  $\frac{\partial g}{\partial a} $  and  $\frac{\partial g}{\partial b} $.
+Hence, in general, one would need the following four partial derivatives:  $\frac{\partial f}{\partial a} $,  $\frac{\partial f}{\partial b}$,  $\frac{\partial g}{\partial a}$  and  $\frac{\partial g}{\partial b}$.
 
 However, if one were to add the assumption that the function $\mathbb{C}\ni z=a+i b \mapsto f(a+i b)+i g(a+i b)$ is holomorphic, then the latter will satisfy the Cauchy-Riemann equations and we would have:
 
 $$\begin{aligned}\frac{\partial f}{\partial a} &= \frac{\partial g}{\partial b}\\\\ \frac{\partial f}{\partial b} &= -\frac{\partial g}{\partial a}\end{aligned}$$
 
-Thus, one can compute for example only  $\frac{\partial f}{\partial a} $  and  $\frac{\partial g}{\partial a} $  and deduce the adjoints  $\bar{a} $  and  $\bar{b} $  as follows:
+Thus, one can compute for example only  $\frac{\partial f}{\partial a}$  and  $\frac{\partial g}{\partial a}$  and deduce the adjoints  $\bar{a}$  and  $\bar{b}$  as follows:
+
 $$\begin{aligned}\bar{a} &= \bar{f} \frac{\partial f}{\partial a} + \bar{g} \frac{\partial g}{\partial a}\\\\ \bar{b} &= \bar{g} \frac{\partial f}{\partial a} - \bar{f} \frac{\partial g}{\partial a}\end{aligned}$$
+
 This simple but powerful idea allows to speed-up the backpropagation and reduce the memory footprints by explicitly hardcoding the fact that we need to compute and store only 2 partial derivatives, whenever holomorphism is assumed.
 
 The analytic extensions of the activations and different custom layers are implemented by subclassing `torch::autograd::Function` and exploiting the Cauchy-Riemann equations in the `backward` methods of the different `torch::autograd::Function` subclasses. More precisely, `torch::autograd::Function` subclasses are implemented in the `modules/activations/autograd` and `modules/layers/autograd` subdirectories and act as wrappers for specialized CUDA code in the respective subdirectories `modules/activations/kernels` and `modules/layers/kernels`.
