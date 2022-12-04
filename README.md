@@ -1,6 +1,6 @@
 # TorchCSD
 
-TorchCSD is a library written for my paper **"Fast Calibration using Complex-Step Sobolev Training"** (see _Citing_ below, preprint is [available here](https://github.com/BouazzaSE/TorchCSD/raw/main/preprint.pdf)). It is a libtorch-based C++ implementation of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
+TorchCSD is a library written for my paper **"Fast Calibration using Complex-Step Sobolev Training"** (see _Citing_ below, preprint is [available at SSRN](https://ssrn.com/abstract=4275942) or [on this Github repo](https://github.com/BouazzaSE/TorchCSD/raw/main/preprint.pdf)). It is a libtorch-based C++ implementation of Sobolev training using stochastic directional derivatives. The latter are computed using complex-step differentiation.
 
 ## Prerequisites
 The code was tested with the following software/library versions:
@@ -91,7 +91,7 @@ If you use this code in your work, you are strongly encouraged to both cite this
 @unpublished{csd2022saadeddine,
   title={Fast Calibration using Complex-Step Sobolev Training},
   author={Saadeddine, Bouazza},
-  year={\ndd},
-  note={unpublished}
+  year={2022},
+  note={Preprint available at SSRN: https://ssrn.com/abstract=4275942}
 }
 ```
